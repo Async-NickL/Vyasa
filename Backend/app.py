@@ -14,7 +14,18 @@ from utils.image_generator import generate_image_from_notes
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Configure CORS to only allow requests from the Netlify domain
+# In development mode, allow all origins for easier testing
+if os.getenv('DEBUG', 'True').lower() == 'true':
+    CORS(app, resources={r"/*": {"origins": "*"}})
+else:
+    # In production, only allow vyasa.netlify.app
+    allowed_origins = [
+        "https://vyasa.netlify.app",
+        "http://vyasa.netlify.app"
+    ]
+    CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
 @app.route('/')
 def index():
