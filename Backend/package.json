@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "marked": "^15.0.7",
+    "google-generativeai": "^1.0.0"
+  }
+}
