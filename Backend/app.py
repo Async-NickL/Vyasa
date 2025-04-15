@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 import json
 import os
@@ -13,19 +13,44 @@ from utils.image_generator import generate_image_from_notes
 # Load environment variables
 load_dotenv()
 
+# Define allowed origins at module level so it's accessible in all functions
+allowed_origins = [
+    "https://vyasa.netlify.app",
+    "http://vyasa.netlify.app"
+]
+
 app = Flask(__name__)
 
-# Configure CORS to only allow requests from the Netlify domain
-# In development mode, allow all origins for easier testing
+# Configure CORS with more explicit settings
 if os.getenv('DEBUG', 'True').lower() == 'true':
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    # In development, allow all origins with more permissive settings
+    CORS(app, 
+         resources={r"/*": {
+             "origins": "*",
+             "methods": ["GET", "POST", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": False,
+             "max_age": 3600
+         }}
+    )
 else:
-    # In production, only allow vyasa.netlify.app
-    allowed_origins = [
-        "https://vyasa.netlify.app",
-        "http://vyasa.netlify.app"
-    ]
-    CORS(app, resources={r"/*": {"origins": allowed_origins}})
+    # In production, only allow specific origins with explicit settings
+    CORS(app, 
+         resources={r"/*": {
+             "origins": allowed_origins,
+             "methods": ["GET", "POST", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": False,
+             "max_age": 3600,
+             "expose_headers": ["Content-Type", "Content-Length"]
+         }}
+    )
+
+# Add a route specifically for handling OPTIONS requests (preflight)
+@app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+@app.route('/<path:path>', methods=['OPTIONS'])
+def options_handler(path):
+    return jsonify({}), 200
 
 @app.route('/')
 def index():
@@ -122,6 +147,24 @@ def generate_visual():
         return jsonify(image_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Add a global after_request handler to ensure CORS headers
+@app.after_request
+def after_request(response):
+    if os.getenv('DEBUG', 'True').lower() == 'true':
+        # In development, allow all origins
+        response.headers.add('Access-Control-Allow-Origin', '*')
+    else:
+        # Check if the request's origin is in our allowed origins
+        origin = request.headers.get('Origin')
+        if origin in allowed_origins:
+            response.headers.add('Access-Control-Allow-Origin', origin)
+    
+    # Add other CORS headers
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'false')
+    return response
 
 if __name__ == '__main__':
     app.run(debug=os.getenv("DEBUG", "True").lower() == "true", 
