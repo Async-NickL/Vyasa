@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import Loader from '../utils/Loader'
+import apiConfig from "../../config/api";
 
 const FileUploader = ({ onFileUpload }) => {
   const [file, setFile] = useState(null);
@@ -107,7 +108,7 @@ const FileUploader = ({ onFileUpload }) => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/analyze-document', formData, {
+      const response = await axios.post(apiConfig.DOCUMENT_API, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

@@ -2,6 +2,7 @@ import { React, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Loader from "../utils/Loader";
 import DOMPurify from "dompurify";
+import apiConfig from "../../config/api";
 
 const GetNotes = () => {
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -137,7 +138,7 @@ const GetNotes = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/generate-notes",
+        apiConfig.NOTES_API,
         {
           youtube_url: youtubeUrl,
         }
@@ -176,7 +177,7 @@ const GetNotes = () => {
         notesContent = headingMatch[1] + " - " + notesContent;
       }
 
-      const response = await axios.post('http://localhost:5000/api/generate-visual', {
+      const response = await axios.post(apiConfig.VISUAL_API, {
         notes_content: notesContent
       });
 

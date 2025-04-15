@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Loader from "../utils/Loader";
 import DOMPurify from "dompurify";
+import apiConfig from "../../config/api";
 
 const RoadmapGenerator = () => {
   const [topic, setTopic] = useState("");
@@ -23,7 +24,7 @@ const RoadmapGenerator = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/generate-roadmap",
+        apiConfig.ROADMAP_API,
         {
           topic: topic.trim(),
         }

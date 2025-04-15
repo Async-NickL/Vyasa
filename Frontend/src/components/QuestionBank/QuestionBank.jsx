@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Loader from "../utils/Loader";
 import DOMPurify from "dompurify";
+import apiConfig from "../../config/api";
 
 const QuestionBank = () => {
   const [fileData, setFileData] = useState(null);
@@ -82,7 +83,7 @@ const QuestionBank = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/generate-questions",
+        apiConfig.QUESTIONS_API,
         formData,
         {
           headers: {
