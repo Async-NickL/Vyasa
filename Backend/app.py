@@ -167,5 +167,12 @@ def after_request(response):
     return response
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv("DEBUG", "True").lower() == "true", 
-            port=int(os.getenv("PORT", 5000)))
+    # Get the PORT from environment variable (provided by Render)
+    port = int(os.environ.get("PORT", 5000))
+    
+    # Make sure to bind to 0.0.0.0 so Render can detect the open port
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=os.getenv("DEBUG", "True").lower() == "true"
+    )
