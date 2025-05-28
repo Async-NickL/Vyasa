@@ -16,14 +16,15 @@ load_dotenv()
 # Define allowed origins at module level so it's accessible in all functions
 allowed_origins = [
     "https://vyasa.netlify.app",
-    "http://vyasa.netlify.app"
+    "http://vyasa.netlify.app",
+    "http://localhost:5173"
 ]
 
 app = Flask(__name__)
 
-# Configure CORS with more explicit settings
+
 if os.getenv('DEBUG', 'True').lower() == 'true':
-    # In development, allow all origins with more permissive settings
+
     CORS(app, 
          resources={r"/*": {
              "origins": "*",
@@ -34,7 +35,7 @@ if os.getenv('DEBUG', 'True').lower() == 'true':
          }}
     )
 else:
-    # In production, only allow specific origins with explicit settings
+    
     CORS(app, 
          resources={r"/*": {
              "origins": allowed_origins,
@@ -138,14 +139,24 @@ def generate_visual():
         if not data or 'notes_content' not in data:
             return jsonify({"error": "Notes content is required"}), 400
         
+        print(f"Received request to generate visual. Content length: {len(data['notes_content'])}")
         notes_content = data['notes_content']
+        
+        # Limit content length to avoid overwhelming the API
+        if len(notes_content) > 1000:
+            print(f"Truncating long content from {len(notes_content)} to 1000 chars")
+            notes_content = notes_content[:1000]
+        
         image_data, error = generate_image_from_notes(notes_content)
         
         if error:
+            print(f"Error generating visual: {error}")
             return jsonify({"error": error}), 500
         
+        print("Successfully generated visual")
         return jsonify(image_data), 200
     except Exception as e:
+        print(f"Unexpected error in generate_visual endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 # Add a global after_request handler to ensure CORS headers
@@ -167,12 +178,5 @@ def after_request(response):
     return response
 
 if __name__ == '__main__':
-    # Get the PORT from environment variable (provided by Render)
-    port = int(os.environ.get("PORT", 5000))
-    
-    # Make sure to bind to 0.0.0.0 so Render can detect the open port
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=os.getenv("DEBUG", "True").lower() == "true"
-    )
+    app.run(debug=os.getenv("DEBUG", "True").lower() == "true", 
+            port=int(os.getenv("PORT", 5000)))

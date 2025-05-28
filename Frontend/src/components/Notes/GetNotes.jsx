@@ -182,12 +182,9 @@ const GetNotes = () => {
       });
 
       if (response.data && response.data.success) {
-        setVisualImage({
-          data: response.data.image_data,
-          mimeType: response.data.mime_type
-        });
+        setVisualImage(response.data);
       } else {
-        setVisualError("Failed to generate visual");
+        setVisualError(response.data?.error || "Failed to generate visual");
       }
     } catch (error) {
       console.error("Error generating visual:", error);
@@ -324,30 +321,62 @@ const GetNotes = () => {
 
       {/* Display Generated Visual */}
       {visualImage && (
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-3 text-[color:var(--text)]">Generated Visual</h3>
+        <div className="mt-6 w-full max-w-[90vw]">
+          <h3 className="text-xl font-semibold mb-3 text-white/80">Generated Visual</h3>
           <div className="bg-black/30 border border-white/10 rounded-lg p-4 flex flex-col items-center">
-            <img 
-              src={`data:${visualImage.mimeType};base64,${visualImage.data}`}
-              alt="Generated visual representation"
-              className="max-w-full max-h-[500px] object-contain rounded-md"
-            />
-            <button 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = `data:${visualImage.mimeType};base64,${visualImage.data}`;
-                link.download = 'notes-visual.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-              className="mt-4 px-3 py-1.5 bg-[color:var(--primary)] hover:bg-[color:var(--light)] text-white rounded-md transition-all flex items-center"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-              </svg>
-              Download Visual
-            </button>
+            {visualImage.is_text ? (
+              // Render text content
+              <div className="w-full max-w-3xl p-5 bg-black/40 rounded-lg text-white/80 overflow-auto max-h-[500px]">
+                <h4 className="text-lg font-medium mb-2 text-white/90">{visualImage.summary}</h4>
+                <div className="whitespace-pre-wrap">
+                  {visualImage.text_content}
+                </div>
+                <button 
+                  onClick={() => {
+                    const blob = new Blob([visualImage.text_content], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'notes-explanation.txt';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="mt-4 px-3 py-1.5 bg-[color:var(--primary)] hover:bg-[color:var(--light)] text-white rounded-md transition-all flex items-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  Download Text
+                </button>
+              </div>
+            ) : (
+              // Render image content
+              <>
+                <img 
+                  src={`data:${visualImage.mime_type};base64,${visualImage.image_data}`}
+                  alt="Generated visual representation"
+                  className="max-w-full max-h-[500px] object-contain rounded-md"
+                />
+                <button 
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = `data:${visualImage.mime_type};base64,${visualImage.image_data}`;
+                    link.download = 'notes-visual.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="mt-4 px-3 py-1.5 bg-[color:var(--primary)] hover:bg-[color:var(--light)] text-white rounded-md transition-all flex items-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  Download Visual
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -90,7 +90,7 @@ def analyze_document_content(file_content, file_name):
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
         }
         
-        model = genai.GenerativeModel('gemini-2.5-pro-exp-03-25')
+        model = genai.GenerativeModel('gemini-2.0-flash-exp-image-generation')
         
         prompt = f"""
         Create a comprehensive summary and analysis of the following document content:

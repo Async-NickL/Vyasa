@@ -1,6 +1,3 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import ReactMarkdown from "react-markdown";
 import Background from "./components/utils/Background";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GooeyNav from "./components/Navbar";
